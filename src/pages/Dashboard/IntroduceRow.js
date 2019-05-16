@@ -66,7 +66,7 @@ const IntroduceRow = memo(({ loading, visitData }) => (
         loading={loading}
         title="监控主机数"
         total={numeral(320).format('0,0')}
-        footer={<Field label="检测的服务数:" value="127.0.0.1" />}
+        footer={<Field label="监控的服务数:" value="2300" />}
         contentHeight={46}
       >
         <MiniArea color="#975FE4" data={visitData} />

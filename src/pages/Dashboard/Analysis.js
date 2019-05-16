@@ -7,10 +7,8 @@ import styles from './Analysis.less';
 import PageLoading from '@/components/PageLoading';
 
 const IntroduceRow = React.lazy(() => import('./IntroduceRow'));
-const SalesCard = React.lazy(() => import('./SalesCard'));
-const TopSearch = React.lazy(() => import('./TopSearch'));
-const ProportionSales = React.lazy(() => import('./ProportionSales'));
-const OfflineData = React.lazy(() => import('./OfflineData'));
+const ProportionService = React.lazy(() => import('./ProportionService'));
+const ProportionVulnerability = React.lazy(() => import('./ProportionVulnerability'));
 
 @connect(({ chart, loading }) => ({
   chart,
@@ -20,7 +18,6 @@ class Analysis extends Component {
   state = {
     loading: true,
     salesType: 'all',
-    currentTabKey: '',
     rangePickerValue: getTimeDistance('year'),
   };
 
@@ -49,12 +46,6 @@ class Analysis extends Component {
   handleChangeSalesType = e => {
     this.setState({
       salesType: e.target.value,
-    });
-  };
-
-  handleTabChange = key => {
-    this.setState({
-      currentTabKey: key,
     });
   };
 
@@ -96,26 +87,62 @@ class Analysis extends Component {
   };
 
   render() {
-    const { rangePickerValue, salesType, currentTabKey, loading: stateLoading } = this.state;
+    const { salesType, loading: stateLoading } = this.state;
     const { chart, loading: propsLoading } = this.props;
     const loading = stateLoading || propsLoading;
-    const {
-      visitData,
-      visitData2,
-      salesData,
-      searchData,
-      offlineData,
-      offlineChartData,
-      salesTypeData,
-      salesTypeDataOnline,
-      salesTypeDataOffline,
-    } = chart;
-    let salesPieData;
-    if (salesType === 'all') {
-      salesPieData = salesTypeData;
-    } else {
-      salesPieData = salesType === 'online' ? salesTypeDataOnline : salesTypeDataOffline;
-    }
+    const { visitData } = chart;
+    const servicePieData = [
+      {
+        x: 'HTTP',
+        y: 2000,
+      },
+      {
+        x: 'SSH',
+        y: 100,
+      },
+      {
+        x: 'FTP',
+        y: 50,
+      },
+      {
+        x: 'SMB',
+        y: 50,
+      },
+      {
+        x: 'MySQL',
+        y: 50,
+      },
+      {
+        x: '其他',
+        y: 50,
+      },
+    ];
+    const vulnerabilityPieData = [
+      {
+        x: '信息泄露',
+        y: 100,
+      },
+      {
+        x: '弱密码',
+        y: 50,
+      },
+      {
+        x: 'SQL注入',
+        y: 20,
+      },
+      {
+        x: 'CVE',
+        y: 20,
+      },
+      {
+        x: 'XSS',
+        y: 10,
+      },
+      {
+        x: '其他',
+        y: 1,
+      },
+    ];
     const menu = (
       <Menu>
         <Menu.Item>操作一</Menu.Item>
@@ -131,58 +158,37 @@ class Analysis extends Component {
       </span>
     );
 
-    const activeKey = currentTabKey || (offlineData[0] && offlineData[0].name);
-
     return (
       <GridContent>
         <Suspense fallback={<PageLoading />}>
           <IntroduceRow loading={loading} visitData={visitData} />
         </Suspense>
-        <Suspense fallback={null}>
-          <SalesCard
-            rangePickerValue={rangePickerValue}
-            salesData={salesData}
-            isActive={this.isActive}
-            handleRangePickerChange={this.handleRangePickerChange}
-            loading={loading}
-            selectDate={this.selectDate}
-          />
-        </Suspense>
         <div className={styles.twoColLayout}>
           <Row gutter={24} type="flex">
             <Col xl={12} lg={24} md={24} sm={24} xs={24}>
               <Suspense fallback={null}>
-                <TopSearch
-                  loading={loading}
-                  visitData2={visitData2}
-                  selectDate={this.selectDate}
-                  searchData={searchData}
+                <ProportionService
                   dropdownGroup={dropdownGroup}
+                  salesType={salesType}
+                  loading={loading}
+                  servicePieData={servicePieData}
+                  handleChangeSalesType={this.handleChangeSalesType}
                 />
               </Suspense>
             </Col>
             <Col xl={12} lg={24} md={24} sm={24} xs={24}>
               <Suspense fallback={null}>
-                <ProportionSales
+                <ProportionVulnerability
                   dropdownGroup={dropdownGroup}
                   salesType={salesType}
                   loading={loading}
-                  salesPieData={salesPieData}
+                  vulnerabilityPieData={vulnerabilityPieData}
                   handleChangeSalesType={this.handleChangeSalesType}
                 />
               </Suspense>
             </Col>
           </Row>
         </div>
-        <Suspense fallback={null}>
-          <OfflineData
-            activeKey={activeKey}
-            loading={loading}
-            offlineData={offlineData}
-            offlineChartData={offlineChartData}
-            handleTabChange={this.handleTabChange}
-          />
-        </Suspense>
       </GridContent>
     );
   }
