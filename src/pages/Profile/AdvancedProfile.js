@@ -2,21 +2,7 @@ import React, { Component, Fragment } from 'react';
 import Debounce from 'lodash-decorators/debounce';
 import Bind from 'lodash-decorators/bind';
 import { connect } from 'dva';
-import {
-  Button,
-  Menu,
-  Dropdown,
-  Icon,
-  Row,
-  Col,
-  Steps,
-  Card,
-  Popover,
-  Badge,
-  Table,
-  Tooltip,
-  Divider,
-} from 'antd';
+import { Button, Icon, Row, Col, Steps, Card, Popover, Badge, Table, Tooltip, Divider } from 'antd';
 import classNames from 'classnames';
 import DescriptionList from '@/components/DescriptionList';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
@@ -28,26 +14,15 @@ const ButtonGroup = Button.Group;
 
 const getWindowWidth = () => window.innerWidth || document.documentElement.clientWidth;
 
-const menu = (
-  <Menu>
-    <Menu.Item key="1">选项一</Menu.Item>
-    <Menu.Item key="2">选项二</Menu.Item>
-    <Menu.Item key="3">选项三</Menu.Item>
-  </Menu>
-);
-
 const action = (
   <Fragment>
     <ButtonGroup>
-      <Button>操作</Button>
-      <Button>操作</Button>
-      <Dropdown overlay={menu} placement="bottomRight">
-        <Button>
-          <Icon type="ellipsis" />
-        </Button>
-      </Dropdown>
+      <Button>开始</Button>
+      <Button>停止</Button>
+      <Button>再次扫描</Button>
+      <Button type="danger">删除</Button>
     </ButtonGroup>
-    <Button type="primary">主操作</Button>
+    <Button type="primary">导出报告</Button>
   </Fragment>
 );
 
@@ -55,57 +30,36 @@ const extra = (
   <Row>
     <Col xs={24} sm={12}>
       <div className={styles.textSecondary}>状态</div>
-      <div className={styles.heading}>待审批</div>
+      <div className={styles.heading}>端口扫描中</div>
     </Col>
     <Col xs={24} sm={12}>
-      <div className={styles.textSecondary}>订单金额</div>
-      <div className={styles.heading}>¥ 568.08</div>
+      <div className={styles.textSecondary}>发现漏洞数</div>
+      <div className={styles.heading}>2</div>
     </Col>
   </Row>
 );
 
 const description = (
   <DescriptionList className={styles.headerList} size="small" col="2">
-    <Description term="创建人">曲丽丽</Description>
-    <Description term="订购产品">XX 服务</Description>
-    <Description term="创建时间">2017-07-07</Description>
-    <Description term="关联单据">
-      <a href="">12421</a>
-    </Description>
-    <Description term="生效日期">2017-07-07 ~ 2017-08-08</Description>
-    <Description term="备注">请于两个工作日内确认</Description>
+    <Description term="IP">127.0.0.1</Description>
+    <Description term="开放端口数量">20个</Description>
+    <Description term="创建时间">2019-05-01 19:20</Description>
+    <Description term="最新扫描时间">2019-05-01 20:20</Description>
   </DescriptionList>
 );
 
-const tabList = [
-  {
-    key: 'detail',
-    tab: '详情',
-  },
-  {
-    key: 'rule',
-    tab: '规则',
-  },
-];
-
 const desc1 = (
   <div className={classNames(styles.textSecondary, styles.stepDescription)}>
-    <Fragment>
-      曲丽丽
-      <Icon type="dingding-o" style={{ marginLeft: 8 }} />
-    </Fragment>
-    <div>2016-12-12 12:32</div>
+    <Fragment>用户添加</Fragment>
+    <div>2019-05-01 19:20</div>
   </div>
 );
 
 const desc2 = (
   <div className={styles.stepDescription}>
-    <Fragment>
-      周毛毛
-      <Icon type="dingding-o" style={{ color: '#00A0E9', marginLeft: 8 }} />
-    </Fragment>
+    <Fragment>任务排队中，当前位于3/30</Fragment>
     <div>
-      <a href="">催一下</a>
+      <a href="">立即开始</a>
     </div>
   </div>
 );
@@ -130,21 +84,6 @@ const customDot = (dot, { status }) =>
   ) : (
     dot
   );
-
-const operationTabList = [
-  {
-    key: 'tab1',
-    tab: '操作日志一',
-  },
-  {
-    key: 'tab2',
-    tab: '操作日志二',
-  },
-  {
-    key: 'tab3',
-    tab: '操作日志三',
-  },
-];
 
 const columns = [
   {
@@ -265,17 +204,17 @@ class AdvancedProfile extends Component {
         extra={action}
         content={description}
         extraContent={extra}
-        tabList={tabList}
       >
-        <Card title="流程进度" style={{ marginBottom: 24 }} bordered={false}>
+        <Card title="扫描进度" style={{ marginBottom: 24 }} bordered={false}>
           <Steps direction={stepDirection} progressDot={customDot} current={1}>
-            <Step title="创建项目" description={desc1} />
-            <Step title="部门初审" description={desc2} />
-            <Step title="财务复核" />
+            <Step title="创建任务" description={desc1} />
+            <Step title="端口扫描" description={desc2} />
+            <Step title="脆弱性测试" />
+            <Step title="弱密码检测" />
             <Step title="完成" />
           </Steps>
         </Card>
-        <Card title="用户信息" style={{ marginBottom: 24 }} bordered={false}>
+        <Card title="" style={{ marginBottom: 24 }} bordered={false}>
           <DescriptionList style={{ marginBottom: 24 }}>
             <Description term="用户姓名">付小小</Description>
             <Description term="会员卡号">32943898021309809423</Description>
@@ -337,14 +276,15 @@ class AdvancedProfile extends Component {
             暂无数据
           </div>
         </Card>
-        <Card
-          className={styles.tabsCard}
-          bordered={false}
-          tabList={operationTabList}
-          onTabChange={this.onOperationTabChange}
-        >
+        <Card className={styles.tabsCard} bordered={false} onTabChange={this.onOperationTabChange}>
           {contentList[operationkey]}
         </Card>
+        <div className={styles.twoColLayout}>
+          <Row gutter={24} type="flex">
+            <Col xl={12} lg={24} md={24} sm={24} xs={24} />
+            <Col xl={12} lg={24} md={24} sm={24} xs={24} />
+          </Row>
+        </div>
       </PageHeaderWrapper>
     );
   }
