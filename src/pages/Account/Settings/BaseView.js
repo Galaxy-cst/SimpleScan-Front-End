@@ -1,54 +1,34 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { formatMessage, FormattedMessage } from 'umi-plugin-react/locale';
-import { Form, Input, Upload, Select, Button } from 'antd';
+import { Form, Input, Button, Popover, Progress } from 'antd';
 import { connect } from 'dva';
 import styles from './BaseView.less';
-import GeographicView from './GeographicView';
-import PhoneView from './PhoneView';
 // import { getTimeDistance } from '@/utils/utils';
 
 const FormItem = Form.Item;
-const { Option } = Select;
 
-// 头像组件 方便以后独立，增加裁剪之类的功能
-const AvatarView = ({ avatar }) => (
-  <Fragment>
-    <div className={styles.avatar_title}>
-      <FormattedMessage id="app.settings.basic.avatar" defaultMessage="Avatar" />
+const passwordStatusMap = {
+  ok: (
+    <div className={styles.success}>
+      <FormattedMessage id="validation.password.strength.strong" />
     </div>
-    <div className={styles.avatar}>
-      <img src={avatar} alt="avatar" />
+  ),
+  pass: (
+    <div className={styles.warning}>
+      <FormattedMessage id="validation.password.strength.medium" />
     </div>
-    <Upload fileList={[]}>
-      <div className={styles.button_view}>
-        <Button icon="upload">
-          <FormattedMessage id="app.settings.basic.change-avatar" defaultMessage="Change avatar" />
-        </Button>
-      </div>
-    </Upload>
-  </Fragment>
-);
-
-const validatorGeographic = (rule, value, callback) => {
-  const { province, city } = value;
-  if (!province.key) {
-    callback('Please input your province!');
-  }
-  if (!city.key) {
-    callback('Please input your city!');
-  }
-  callback();
+  ),
+  poor: (
+    <div className={styles.error}>
+      <FormattedMessage id="validation.password.strength.short" />
+    </div>
+  ),
 };
 
-const validatorPhone = (rule, value, callback) => {
-  const values = value.split('-');
-  if (!values[0]) {
-    callback('Please input your area code!');
-  }
-  if (!values[1]) {
-    callback('Please input your phone number!');
-  }
-  callback();
+const passwordProgressMap = {
+  ok: 'success',
+  pass: 'normal',
+  poor: 'exception',
 };
 
 @connect(({ user }) => ({
@@ -56,6 +36,11 @@ const validatorPhone = (rule, value, callback) => {
 }))
 @Form.create()
 class BaseView extends Component {
+  state = {
+    confirmDirty: false,
+    visible: false,
+  };
+
   componentDidMount() {
     this.setBaseInfo();
   }
@@ -69,109 +54,148 @@ class BaseView extends Component {
     });
   };
 
-  getAvatarURL() {
-    const { currentUser } = this.props;
-    if (currentUser.avatar) {
-      return currentUser.avatar;
-    }
-    const url = 'https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png';
-    return url;
-  }
-
   getViewDom = ref => {
     this.view = ref;
+  };
+
+  checkConfirm = (rule, value, callback) => {
+    const { form } = this.props;
+    if (value && value !== form.getFieldValue('password')) {
+      callback(formatMessage({ id: 'validation.password.twice' }));
+    } else {
+      callback();
+    }
+  };
+
+  getPasswordStatus = () => {
+    const { form } = this.props;
+    const value = form.getFieldValue('password');
+    const containchat = e => !/^[0-9a-zA-Z]*$/.test(e);
+    if (value && value.length > 9 && containchat(value)) {
+      return 'ok';
+    }
+    if (value && value.length > 5) {
+      return 'pass';
+    }
+    return 'poor';
+  };
+
+  checkPassword = (rule, value, callback) => {
+    const { visible, confirmDirty } = this.state;
+    if (!value) {
+      this.setState({
+        visible: !!value,
+      });
+      callback(formatMessage({ id: 'validation.password.required' }));
+    } else {
+      if (!visible) {
+        this.setState({
+          visible: !!value,
+        });
+      }
+      if (value.length < 6) {
+        callback(formatMessage({ id: 'validation.password.strength.msg' }));
+      } else {
+        const { form } = this.props;
+        if (value && confirmDirty) {
+          form.validateFields(['confirm'], { force: true });
+        }
+        callback();
+      }
+    }
+  };
+
+  renderPasswordProgress = () => {
+    const { form } = this.props;
+    const value = form.getFieldValue('password');
+    const passwordStatus = this.getPasswordStatus();
+    return value && value.length ? (
+      <div className={styles[`progress-${passwordStatus}`]}>
+        <Progress
+          status={passwordProgressMap[passwordStatus]}
+          className={styles.progress}
+          strokeWidth={6}
+          percent={
+            (value.length * 10 > 80 ? 80 : value.length * 10) + (passwordStatus === 'ok' ? 20 : 0)
+          }
+          showInfo={false}
+        />
+      </div>
+    ) : null;
   };
 
   render() {
     const {
       form: { getFieldDecorator },
     } = this.props;
+    const { visible } = this.state;
+
     return (
       <div className={styles.baseView} ref={this.getViewDom}>
         <div className={styles.left}>
           <Form layout="vertical" onSubmit={this.handleSubmit} hideRequiredMark>
-            <FormItem label={formatMessage({ id: 'app.settings.basic.email' })}>
-              {getFieldDecorator('email', {
+            <FormItem label="原密码">
+              {getFieldDecorator('original-password', {
                 rules: [
                   {
                     required: true,
-                    message: formatMessage({ id: 'app.settings.basic.email-message' }, {}),
-                  },
-                ],
-              })(<Input />)}
-            </FormItem>
-            <FormItem label={formatMessage({ id: 'app.settings.basic.nickname' })}>
-              {getFieldDecorator('name', {
-                rules: [
-                  {
-                    required: true,
-                    message: formatMessage({ id: 'app.settings.basic.nickname-message' }, {}),
-                  },
-                ],
-              })(<Input />)}
-            </FormItem>
-            <FormItem label={formatMessage({ id: 'app.settings.basic.profile' })}>
-              {getFieldDecorator('profile', {
-                rules: [
-                  {
-                    required: true,
-                    message: formatMessage({ id: 'app.settings.basic.profile-message' }, {}),
+                    message: '请输入原密码',
                   },
                 ],
               })(
-                <Input.TextArea
-                  placeholder={formatMessage({ id: 'app.settings.basic.profile-placeholder' })}
-                  rows={4}
+                <Input
+                  type="password"
+                  placeholder={formatMessage({ id: 'form.password.placeholder' })}
                 />
               )}
             </FormItem>
-            <FormItem label={formatMessage({ id: 'app.settings.basic.country' })}>
-              {getFieldDecorator('country', {
+            <FormItem label="新密码">
+              <Popover
+                getPopupContainer={node => node.parentNode}
+                content={
+                  <div style={{ padding: '4px 0' }}>
+                    {passwordStatusMap[this.getPasswordStatus()]}
+                    {this.renderPasswordProgress()}
+                    <div style={{ marginTop: 10 }}>
+                      <FormattedMessage id="validation.password.strength.msg" />
+                    </div>
+                  </div>
+                }
+                overlayStyle={{ width: 240 }}
+                placement="right"
+                visible={visible}
+              >
+                {getFieldDecorator('password', {
+                  rules: [
+                    {
+                      validator: this.checkPassword,
+                    },
+                  ],
+                })(
+                  <Input
+                    type="password"
+                    placeholder={formatMessage({ id: 'form.password.placeholder' })}
+                  />
+                )}
+              </Popover>
+            </FormItem>
+            <FormItem label="再次输入">
+              {getFieldDecorator('confirm', {
                 rules: [
                   {
                     required: true,
-                    message: formatMessage({ id: 'app.settings.basic.country-message' }, {}),
+                    message: formatMessage({ id: 'validation.confirm-password.required' }),
+                  },
+                  {
+                    validator: this.checkConfirm,
                   },
                 ],
               })(
-                <Select style={{ maxWidth: 220 }}>
-                  <Option value="China">中国</Option>
-                </Select>
+                <Input
+                  type="password"
+                  placeholder={formatMessage({ id: 'form.confirm-password.placeholder' })}
+                />
               )}
-            </FormItem>
-            <FormItem label={formatMessage({ id: 'app.settings.basic.geographic' })}>
-              {getFieldDecorator('geographic', {
-                rules: [
-                  {
-                    required: true,
-                    message: formatMessage({ id: 'app.settings.basic.geographic-message' }, {}),
-                  },
-                  {
-                    validator: validatorGeographic,
-                  },
-                ],
-              })(<GeographicView />)}
-            </FormItem>
-            <FormItem label={formatMessage({ id: 'app.settings.basic.address' })}>
-              {getFieldDecorator('address', {
-                rules: [
-                  {
-                    required: true,
-                    message: formatMessage({ id: 'app.settings.basic.address-message' }, {}),
-                  },
-                ],
-              })(<Input />)}
-            </FormItem>
-            <FormItem label={formatMessage({ id: 'app.settings.basic.phone' })}>
-              {getFieldDecorator('phone', {
-                rules: [
-                  {
-                    required: true,
-                    message: formatMessage({ id: 'app.settings.basic.phone-message' }, {}),
-                  },
-                  { validator: validatorPhone },
-                ],
-              })(<PhoneView />)}
             </FormItem>
             <Button type="primary">
               <FormattedMessage
@@ -180,9 +204,6 @@ class BaseView extends Component {
               />
             </Button>
           </Form>
-        </div>
-        <div className={styles.right}>
-          <AvatarView avatar={this.getAvatarURL()} />
         </div>
       </div>
     );
