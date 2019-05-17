@@ -37,33 +37,7 @@ const getValue = obj =>
     .map(key => obj[key])
     .join(',');
 const statusMap = ['default', 'processing', 'success', 'error'];
-const status = ['关闭', '运行中', '已上线', '异常'];
-
-const CreateForm = Form.create()(props => {
-  const { modalVisible, form, handleAdd, handleModalVisible } = props;
-  const okHandle = () => {
-    form.validateFields((err, fieldsValue) => {
-      if (err) return;
-      form.resetFields();
-      handleAdd(fieldsValue);
-    });
-  };
-  return (
-    <Modal
-      destroyOnClose
-      title="新建规则"
-      visible={modalVisible}
-      onOk={okHandle}
-      onCancel={() => handleModalVisible()}
-    >
-      <FormItem labelCol={{ span: 5 }} wrapperCol={{ span: 15 }} label="描述">
-        {form.getFieldDecorator('desc', {
-          rules: [{ required: true, message: '请输入至少五个字符的规则描述！', min: 5 }],
-        })(<Input placeholder="请输入" />)}
-      </FormItem>
-    </Modal>
-  );
-});
+const status = ['等待中', '运行中', '已完成', '异常'];
 
 @Form.create()
 class UpdateForm extends PureComponent {
@@ -281,7 +255,6 @@ class UpdateForm extends PureComponent {
 @Form.create()
 class TableList extends PureComponent {
   state = {
-    modalVisible: false,
     updateModalVisible: false,
     expandForm: false,
     selectedRows: [],
@@ -291,19 +264,19 @@ class TableList extends PureComponent {
 
   columns = [
     {
-      title: '规则名称',
+      title: '任务ID',
       dataIndex: 'name',
       render: text => <a onClick={() => this.previewItem(text)}>{text}</a>,
     },
     {
-      title: '描述',
+      title: 'IP',
       dataIndex: 'desc',
     },
     {
-      title: '服务调用次数',
+      title: '发现漏洞',
       dataIndex: 'callNo',
       sorter: true,
-      render: val => `${val} 万`,
+      render: val => `${val} 个`,
       // mark to display a total number
       needTotal: true,
     },
@@ -333,18 +306,20 @@ class TableList extends PureComponent {
       },
     },
     {
-      title: '上次调度时间',
+      title: '最新扫描时间',
       dataIndex: 'updatedAt',
       sorter: true,
       render: val => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>,
     },
     {
       title: '操作',
-      render: (text, record) => (
+      render: text => (
         <Fragment>
-          <a onClick={() => this.handleUpdateModalVisible(true, record)}>配置</a>
+          <a onClick={() => this.previewItem(text)}>查看详情</a>
           <Divider type="vertical" />
-          <a href="">订阅警报</a>
+          <a href="">导出</a>
+          <Divider type="vertical" />
+          <a href="">删除</a>
         </Fragment>
       ),
     },
@@ -384,7 +359,7 @@ class TableList extends PureComponent {
   };
 
   previewItem = id => {
-    router.push(`/profile/basic/${id}`);
+    router.push(`/profile/advanced/${id}`);
   };
 
   handleFormReset = () => {
@@ -460,12 +435,6 @@ class TableList extends PureComponent {
     });
   };
 
-  handleModalVisible = flag => {
-    this.setState({
-      modalVisible: !!flag,
-    });
-  };
-
   handleUpdateModalVisible = (flag, record) => {
     this.setState({
       updateModalVisible: !!flag,
@@ -513,12 +482,12 @@ class TableList extends PureComponent {
       <Form onSubmit={this.handleSearch} layout="inline">
         <Row gutter={{ md: 8, lg: 24, xl: 48 }}>
           <Col md={8} sm={24}>
-            <FormItem label="规则名称">
+            <FormItem label="任务ID">
               {getFieldDecorator('name')(<Input placeholder="请输入" />)}
             </FormItem>
           </Col>
           <Col md={8} sm={24}>
-            <FormItem label="使用状态">
+            <FormItem label="扫描状态">
               {getFieldDecorator('status')(
                 <Select placeholder="请选择" style={{ width: '100%' }}>
                   <Option value="0">关闭</Option>
@@ -553,12 +522,12 @@ class TableList extends PureComponent {
       <Form onSubmit={this.handleSearch} layout="inline">
         <Row gutter={{ md: 8, lg: 24, xl: 48 }}>
           <Col md={8} sm={24}>
-            <FormItem label="规则名称">
+            <FormItem label="任务ID">
               {getFieldDecorator('name')(<Input placeholder="请输入" />)}
             </FormItem>
           </Col>
           <Col md={8} sm={24}>
-            <FormItem label="使用状态">
+            <FormItem label="IP">
               {getFieldDecorator('status')(
                 <Select placeholder="请选择" style={{ width: '100%' }}>
                   <Option value="0">关闭</Option>
@@ -568,7 +537,7 @@ class TableList extends PureComponent {
             </FormItem>
           </Col>
           <Col md={8} sm={24}>
-            <FormItem label="调用次数">
+            <FormItem label="发现漏洞">
               {getFieldDecorator('number')(<InputNumber style={{ width: '100%' }} />)}
             </FormItem>
           </Col>
@@ -629,34 +598,30 @@ class TableList extends PureComponent {
       rule: { data },
       loading,
     } = this.props;
-    const { selectedRows, modalVisible, updateModalVisible, stepFormValues } = this.state;
+    const { selectedRows, updateModalVisible, stepFormValues } = this.state;
     const menu = (
       <Menu onClick={this.handleMenuClick} selectedKeys={[]}>
         <Menu.Item key="remove">删除</Menu.Item>
-        <Menu.Item key="approval">批量审批</Menu.Item>
+        <Menu.Item key="approval">停止</Menu.Item>
       </Menu>
     );
 
-    const parentMethods = {
-      handleAdd: this.handleAdd,
-      handleModalVisible: this.handleModalVisible,
-    };
     const updateMethods = {
       handleUpdateModalVisible: this.handleUpdateModalVisible,
       handleUpdate: this.handleUpdate,
     };
     return (
-      <PageHeaderWrapper title="查询表格">
+      <PageHeaderWrapper title="查看扫描任务">
         <Card bordered={false}>
           <div className={styles.tableList}>
             <div className={styles.tableListForm}>{this.renderForm()}</div>
             <div className={styles.tableListOperator}>
-              <Button icon="plus" type="primary" onClick={() => this.handleModalVisible(true)}>
-                新建
+              <Button icon="download" type="primary" onClick={() => this.handleModalVisible(true)}>
+                下载所有结果
               </Button>
               {selectedRows.length > 0 && (
                 <span>
-                  <Button>批量操作</Button>
+                  <Button>下载选中</Button>
                   <Dropdown overlay={menu}>
                     <Button>
                       更多操作 <Icon type="down" />
@@ -675,7 +640,6 @@ class TableList extends PureComponent {
             />
           </div>
         </Card>
-        <CreateForm {...parentMethods} modalVisible={modalVisible} />
         {stepFormValues && Object.keys(stepFormValues).length ? (
           <UpdateForm
             {...updateMethods}
