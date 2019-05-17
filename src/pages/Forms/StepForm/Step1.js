@@ -21,7 +21,7 @@ const formItemLayout = {
 @Form.create()
 class Step1 extends React.PureComponent {
   render() {
-    const { form, dispatch, data } = this.props;
+    const { form, dispatch } = this.props;
     const { getFieldDecorator, validateFields } = form;
     const onValidateForm = () => {
       validateFields((err, values) => {
@@ -37,48 +37,22 @@ class Step1 extends React.PureComponent {
     return (
       <Fragment>
         <Form layout="horizontal" className={styles.stepForm} hideRequiredMark>
-          <Form.Item {...formItemLayout} label="付款账户">
-            {getFieldDecorator('payAccount', {
-              initialValue: data.payAccount,
-              rules: [{ required: true, message: '请选择付款账户' }],
-            })(
-              <Select placeholder="test@example.com">
-                <Option value="ant-design@alipay.com">ant-design@alipay.com</Option>
-              </Select>
-            )}
-          </Form.Item>
-          <Form.Item {...formItemLayout} label="收款账户">
+          <Form.Item {...formItemLayout} label="扫描目标">
             <Input.Group compact>
-              <Select defaultValue="alipay" style={{ width: 100 }}>
-                <Option value="alipay">支付宝</Option>
-                <Option value="bank">银行账户</Option>
+              <Select defaultValue="ip" style={{ width: 80 }}>
+                <Option value="ip">IP</Option>
+                <Option value="domain">域名</Option>
               </Select>
               {getFieldDecorator('receiverAccount', {
-                initialValue: data.receiverAccount,
-                rules: [
-                  { required: true, message: '请输入收款人账户' },
-                  { type: 'email', message: '账户名应为邮箱格式' },
-                ],
-              })(<Input style={{ width: 'calc(100% - 100px)' }} placeholder="test@example.com" />)}
+                rules: [{ required: true, message: '请输入扫描目标' }],
+              })(<Input style={{ width: 'calc(100% - 100px)' }} placeholder="127.0.0.1" />)}
             </Input.Group>
           </Form.Item>
-          <Form.Item {...formItemLayout} label="收款人姓名">
+          <Form.Item {...formItemLayout} label="扫描端口范围">
             {getFieldDecorator('receiverName', {
-              initialValue: data.receiverName,
-              rules: [{ required: true, message: '请输入收款人姓名' }],
-            })(<Input placeholder="请输入收款人姓名" />)}
-          </Form.Item>
-          <Form.Item {...formItemLayout} label="转账金额">
-            {getFieldDecorator('amount', {
-              initialValue: data.amount,
-              rules: [
-                { required: true, message: '请输入转账金额' },
-                {
-                  pattern: /^(\d+)((?:\.\d+)?)$/,
-                  message: '请输入合法金额数字',
-                },
-              ],
-            })(<Input prefix="￥" placeholder="请输入金额" />)}
+              initialValue: 'all',
+              rules: [{ required: true, message: '请输入扫描端口范围' }],
+            })(<Input placeholder="22,80-3000,8000-8200" />)}
           </Form.Item>
           <Form.Item
             wrapperCol={{
@@ -98,14 +72,13 @@ class Step1 extends React.PureComponent {
         <Divider style={{ margin: '40px 0 24px' }} />
         <div className={styles.desc}>
           <h3>说明</h3>
-          <h4>转账到支付宝账户</h4>
-          <p>
-            如果需要，这里可以放一些关于产品的常见问题说明。如果需要，这里可以放一些关于产品的常见问题说明。如果需要，这里可以放一些关于产品的常见问题说明。
-          </p>
-          <h4>转账到银行卡</h4>
-          <p>
-            如果需要，这里可以放一些关于产品的常见问题说明。如果需要，这里可以放一些关于产品的常见问题说明。如果需要，这里可以放一些关于产品的常见问题说明。
-          </p>
+          <h4>扫描目标</h4>
+          <p>扫描目标可以是IP、IP段或者域名</p>
+          <p>IP段可以使用127.0.0.1-127.0.1.1格式，也可以使用127.0.0.1/24格式。</p>
+          <p>域名会解析为IP，该域名下的所有IP地址都会被扫描。</p>
+          <h4>扫描端口</h4>
+          <p>端口使用逗号分隔，可以使用-连接符表示端口范围。输入“all”表示扫描所有端口。</p>
+          <p>示例：&quot;80,81-82&quot;表示80,81,82三个端口</p>
         </div>
       </Fragment>
     );

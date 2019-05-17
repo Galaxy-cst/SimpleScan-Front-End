@@ -18,15 +18,7 @@ class Step3 extends React.PureComponent {
       <div className={styles.information}>
         <Row>
           <Col xs={24} sm={8} className={styles.label}>
-            付款账户：
-          </Col>
-          <Col xs={24} sm={16}>
-            {data.payAccount}
-          </Col>
-        </Row>
-        <Row>
-          <Col xs={24} sm={8} className={styles.label}>
-            收款账户：
+            扫描目标：
           </Col>
           <Col xs={24} sm={16}>
             {data.receiverAccount}
@@ -34,18 +26,10 @@ class Step3 extends React.PureComponent {
         </Row>
         <Row>
           <Col xs={24} sm={8} className={styles.label}>
-            收款人姓名：
+            扫描端口：
           </Col>
           <Col xs={24} sm={16}>
             {data.receiverName}
-          </Col>
-        </Row>
-        <Row>
-          <Col xs={24} sm={8} className={styles.label}>
-            转账金额：
-          </Col>
-          <Col xs={24} sm={16}>
-            <span className={styles.money}>{data.amount}</span> 元
           </Col>
         </Row>
       </div>
@@ -53,16 +37,16 @@ class Step3 extends React.PureComponent {
     const actions = (
       <Fragment>
         <Button type="primary" onClick={onFinish}>
-          再转一笔
+          继续添加任务
         </Button>
-        <Button>查看账单</Button>
+        <Button>进入控制台查看</Button>
       </Fragment>
     );
     return (
       <Result
         type="success"
         title="操作成功"
-        description="预计两小时内到账"
+        description="扫描任务已添加至队列，您可以在控制台查看进度"
         extra={information}
         actions={actions}
         className={styles.result}
