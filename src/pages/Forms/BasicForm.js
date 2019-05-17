@@ -1,24 +1,11 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { formatMessage, FormattedMessage } from 'umi-plugin-react/locale';
-import {
-  Form,
-  Input,
-  DatePicker,
-  Select,
-  Button,
-  Card,
-  InputNumber,
-  Radio,
-  Icon,
-  Tooltip,
-} from 'antd';
+import { Form, Input, Select, Button, Card, Radio } from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import styles from './style.less';
 
 const FormItem = Form.Item;
 const { Option } = Select;
-const { RangePicker } = DatePicker;
 const { TextArea } = Input;
 
 @connect(({ loading }) => ({
@@ -66,143 +53,43 @@ class BasicForms extends PureComponent {
 
     return (
       <PageHeaderWrapper
-        title={<FormattedMessage id="app.forms.basic.title" />}
-        content={<FormattedMessage id="app.forms.basic.description" />}
+        title={<FormattedMessage id="menu.form.basicform" />}
+        content="向Payload库中添加新的检测脚本，添加请重新运行之前的扫描以获得最新结果"
       >
         <Card bordered={false}>
           <Form onSubmit={this.handleSubmit} hideRequiredMark style={{ marginTop: 8 }}>
-            <FormItem {...formItemLayout} label={<FormattedMessage id="form.title.label" />}>
+            <FormItem {...formItemLayout} label="Payload名称">
               {getFieldDecorator('title', {
                 rules: [
                   {
                     required: true,
-                    message: formatMessage({ id: 'validation.title.required' }),
+                    message: '请输入Payload名称',
                   },
                 ],
-              })(<Input placeholder={formatMessage({ id: 'form.title.placeholder' })} />)}
+              })(<Input placeholder="Payload名称" />)}
             </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id="form.date.label" />}>
-              {getFieldDecorator('date', {
-                rules: [
-                  {
-                    required: true,
-                    message: formatMessage({ id: 'validation.date.required' }),
-                  },
-                ],
-              })(
-                <RangePicker
-                  style={{ width: '100%' }}
-                  placeholder={[
-                    formatMessage({ id: 'form.date.placeholder.start' }),
-                    formatMessage({ id: 'form.date.placeholder.end' }),
-                  ]}
-                />
-              )}
-            </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id="form.goal.label" />}>
+            <FormItem {...formItemLayout} label="JSON描述代码">
               {getFieldDecorator('goal', {
                 rules: [
                   {
                     required: true,
-                    message: formatMessage({ id: 'validation.goal.required' }),
+                    message: '请输入JSON描述代码',
                   },
                 ],
-              })(
-                <TextArea
-                  style={{ minHeight: 32 }}
-                  placeholder={formatMessage({ id: 'form.goal.placeholder' })}
-                  rows={4}
-                />
-              )}
-            </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id="form.standard.label" />}>
-              {getFieldDecorator('standard', {
-                rules: [
-                  {
-                    required: true,
-                    message: formatMessage({ id: 'validation.standard.required' }),
-                  },
-                ],
-              })(
-                <TextArea
-                  style={{ minHeight: 32 }}
-                  placeholder={formatMessage({ id: 'form.standard.placeholder' })}
-                  rows={4}
-                />
-              )}
+              })(<TextArea style={{ minHeight: 32 }} placeholder="{}" rows={4} />)}
             </FormItem>
             <FormItem
               {...formItemLayout}
-              label={
-                <span>
-                  <FormattedMessage id="form.client.label" />
-                  <em className={styles.optional}>
-                    <FormattedMessage id="form.optional" />
-                    <Tooltip title={<FormattedMessage id="form.client.label.tooltip" />}>
-                      <Icon type="info-circle-o" style={{ marginRight: 4 }} />
-                    </Tooltip>
-                  </em>
-                </span>
-              }
-            >
-              {getFieldDecorator('client')(
-                <Input placeholder={formatMessage({ id: 'form.client.placeholder' })} />
-              )}
-            </FormItem>
-            <FormItem
-              {...formItemLayout}
-              label={
-                <span>
-                  <FormattedMessage id="form.invites.label" />
-                  <em className={styles.optional}>
-                    <FormattedMessage id="form.optional" />
-                  </em>
-                </span>
-              }
-            >
-              {getFieldDecorator('invites')(
-                <Input placeholder={formatMessage({ id: 'form.invites.placeholder' })} />
-              )}
-            </FormItem>
-            <FormItem
-              {...formItemLayout}
-              label={
-                <span>
-                  <FormattedMessage id="form.weight.label" />
-                  <em className={styles.optional}>
-                    <FormattedMessage id="form.optional" />
-                  </em>
-                </span>
-              }
-            >
-              {getFieldDecorator('weight')(
-                <InputNumber
-                  placeholder={formatMessage({ id: 'form.weight.placeholder' })}
-                  min={0}
-                  max={100}
-                />
-              )}
-              <span className="ant-form-text">%</span>
-            </FormItem>
-            <FormItem
-              {...formItemLayout}
-              label={<FormattedMessage id="form.public.label" />}
-              help={<FormattedMessage id="form.public.label.help" />}
+              label="Payload类型"
+              help="通用漏洞会对所有服务进行探测；CVE只会探测对应服务版本；"
             >
               <div>
                 {getFieldDecorator('public', {
-                  initialValue: '1',
+                  initialValue: 'general',
                 })(
                   <Radio.Group>
-                    <Radio value="1">
-                      <FormattedMessage id="form.public.radio.public" />
-                    </Radio>
-                    <Radio value="2">
-                      <FormattedMessage id="form.public.radio.partially-public" />
-                    </Radio>
-                    <Radio value="3">
-                      <FormattedMessage id="form.public.radio.private" />
-                    </Radio>
+                    <Radio value="general">通用漏洞</Radio>
+                    <Radio value="cve">CVE</Radio>
                   </Radio.Group>
                 )}
                 <FormItem style={{ marginBottom: 0 }}>
@@ -232,9 +119,6 @@ class BasicForms extends PureComponent {
             <FormItem {...submitFormLayout} style={{ marginTop: 32 }}>
               <Button type="primary" htmlType="submit" loading={submitting}>
                 <FormattedMessage id="form.submit" />
-              </Button>
-              <Button style={{ marginLeft: 8 }}>
-                <FormattedMessage id="form.save" />
               </Button>
             </FormItem>
           </Form>
