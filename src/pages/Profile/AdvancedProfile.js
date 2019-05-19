@@ -2,15 +2,17 @@ import React, { Component, Fragment } from 'react';
 import Debounce from 'lodash-decorators/debounce';
 import Bind from 'lodash-decorators/bind';
 import { connect } from 'dva';
-import { Button, Icon, Row, Col, Steps, Card, Popover, Badge, Table, Tooltip, Divider } from 'antd';
-import classNames from 'classnames';
+import { Button, Icon, Row, Col, Steps, Card, Badge, Table, Collapse } from 'antd';
+import { Gauge, Pie } from '@/components/Charts';
 import DescriptionList from '@/components/DescriptionList';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
+import numeral from 'numeral';
 import styles from './AdvancedProfile.less';
 
 const { Step } = Steps;
 const { Description } = DescriptionList;
 const ButtonGroup = Button.Group;
+const { Panel } = Collapse.Panel;
 
 const getWindowWidth = () => window.innerWidth || document.documentElement.clientWidth;
 
@@ -49,14 +51,14 @@ const description = (
 );
 
 const desc1 = (
-  <div className={classNames(styles.textSecondary, styles.stepDescription)}>
+  <div>
     <Fragment>用户添加</Fragment>
     <div>2019-05-01 19:20</div>
   </div>
 );
 
 const desc2 = (
-  <div className={styles.stepDescription}>
+  <div>
     <Fragment>任务排队中，当前位于3/30</Fragment>
     <div>
       <a href="">立即开始</a>
@@ -64,60 +66,197 @@ const desc2 = (
   </div>
 );
 
-const popoverContent = (
-  <div style={{ width: 160 }}>
-    吴加号
-    <span className={styles.textSecondary} style={{ float: 'right' }}>
-      <Badge status="default" text={<span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>未响应</span>} />
-    </span>
-    <div className={styles.textSecondary} style={{ marginTop: 4 }}>
-      耗时：2小时25分钟
-    </div>
-  </div>
-);
-
-const customDot = (dot, { status }) =>
-  status === 'process' ? (
-    <Popover placement="topLeft" arrowPointAtCenter content={popoverContent}>
-      {dot}
-    </Popover>
-  ) : (
-    dot
-  );
-
-const columns = [
+const servicePieData = [
   {
-    title: '操作类型',
-    dataIndex: 'type',
-    key: 'type',
+    x: 'HTTP',
+    y: 2000,
   },
   {
-    title: '操作人',
-    dataIndex: 'name',
-    key: 'name',
+    x: 'SSH',
+    y: 100,
   },
   {
-    title: '执行结果',
-    dataIndex: 'status',
-    key: 'status',
-    render: text =>
-      text === 'agree' ? (
-        <Badge status="success" text="成功" />
-      ) : (
-        <Badge status="error" text="驳回" />
-      ),
+    x: 'FTP',
+    y: 50,
   },
   {
-    title: '操作时间',
-    dataIndex: 'updatedAt',
-    key: 'updatedAt',
+    x: 'SMB',
+    y: 50,
   },
   {
-    title: '备注',
-    dataIndex: 'memo',
-    key: 'memo',
+    x: 'MySQL',
+    y: 50,
+  },
+  {
+    x: '其他',
+    y: 50,
   },
 ];
+
+const vulnerabilityPieData = [
+  {
+    x: '信息泄露',
+    y: 100,
+  },
+  {
+    x: '弱密码',
+    y: 50,
+  },
+  {
+    x: 'SQL注入',
+    y: 20,
+  },
+  {
+    x: 'CVE',
+    y: 20,
+  },
+  {
+    x: 'XSS',
+    y: 10,
+  },
+  {
+    x: '其他',
+    y: 1,
+  },
+];
+
+const tableList = [
+  {
+    key: 'service',
+    tab: '服务详情列表',
+  },
+  {
+    key: 'vulnerability',
+    tab: '漏洞详情列表',
+  },
+];
+
+const tableListcontent = {
+  service: <ServiceTable />,
+  vulnerability: <VulnerabilityTable />,
+};
+
+function ServiceTable() {
+  const expandedRowRender = () => {
+    const data = [];
+    for (let i = 0; i < 3; i += 1) {
+      data.push({
+        key: i,
+        date: '2014-12-24 23:12:00',
+        name: 'This is production name',
+        upgradeNum: 'Upgraded: 56',
+      });
+    }
+    const expandedRow = (
+      <p>
+        conf=&quot;10&quot;&nbsp;method=&quot;probed&quot;&nbsp;product=&quot;nginx&quot;&nbsp;version=&quot;1.13.8&quot;
+      </p>
+    );
+    return expandedRow;
+  };
+
+  const columns = [
+    { title: '端口', dataIndex: 'port', key: 'port' },
+    { title: '服务', dataIndex: 'service', key: 'service' },
+    { title: 'OS', dataIndex: 'os', key: 'os' },
+    { title: '漏洞数', dataIndex: 'vulnerability', key: 'vulnerability' },
+    { title: '高危漏洞', dataIndex: 'state', key: 'state' },
+    { title: '扫描时间', dataIndex: 'date', key: 'date' },
+  ];
+
+  const data = [];
+  for (let i = 0; i < 3; i += 1) {
+    data.push({
+      key: i,
+      port: '80',
+      service: 'http',
+      os: 'Linux 3.2-4.0',
+      date: '2018-12-24 23:12:00',
+      vulnerability: 2,
+      state: (
+        <span>
+          <Badge status="error" />
+          存在
+        </span>
+      ),
+    });
+  }
+
+  return (
+    <Table
+      className="components-table-demo-nested"
+      columns={columns}
+      expandedRowRender={expandedRowRender}
+      dataSource={data}
+      pagination={false}
+    />
+  );
+}
+
+function VulnerabilityTable() {
+  const expandedRowRender = () => {
+    const panel = (
+      <Collapse defaultActiveKey={[]}>
+        <Panel header="/www/.git" key="1">
+          <div className={styles.twoColLayout} style={{ marginBottom: 24 }}>
+            <Row gutter={24} type="flex">
+              <Col xl={12} lg={24} md={24} sm={24} xs={24}>
+                <Card title="请求内容" bordered={false}>
+                  123
+                </Card>
+              </Col>
+              <Col xl={12} lg={24} md={24} sm={24} xs={24}>
+                <Card title="请求结果" bordered={false}>
+                  123
+                </Card>
+              </Col>
+            </Row>
+          </div>
+        </Panel>
+      </Collapse>
+    );
+    return panel;
+  };
+
+  const columns = [
+    { title: '漏洞名称', dataIndex: 'name', key: 'name' },
+    { title: '漏洞类型', dataIndex: 'type', key: 'type' },
+    { title: '危险性', dataIndex: 'state', key: 'state' },
+    { title: '数量', dataIndex: 'sum', key: 'sum' },
+    { title: '端口', dataIndex: 'port', key: 'port' },
+    { title: '服务', dataIndex: 'service', key: 'service' },
+    { title: '扫描时间', dataIndex: 'date', key: 'date' },
+  ];
+
+  const data = [];
+  for (let i = 0; i < 3; i += 1) {
+    data.push({
+      key: i,
+      name: '.git泄露',
+      type: '敏感信息泄露',
+      state: (
+        <span>
+          <Badge status="warning" />
+          中危
+        </span>
+      ),
+      sum: `${1}个`,
+      port: 80,
+      service: 'http',
+      date: '2018-12-24 23:12:00',
+    });
+  }
+
+  return (
+    <Table
+      className="components-table-demo-nested"
+      columns={columns}
+      expandedRowRender={expandedRowRender}
+      dataSource={data}
+      pagination={false}
+    />
+  );
+}
 
 @connect(({ profile, loading }) => ({
   profile,
@@ -125,8 +264,8 @@ const columns = [
 }))
 class AdvancedProfile extends Component {
   state = {
-    operationkey: 'tab1',
     stepDirection: 'horizontal',
+    tableListKey: 'service',
   };
 
   componentDidMount() {
@@ -144,10 +283,6 @@ class AdvancedProfile extends Component {
     this.setStepDirection.cancel();
   }
 
-  onOperationTabChange = key => {
-    this.setState({ operationkey: key });
-  };
-
   @Bind()
   @Debounce(200)
   setStepDirection() {
@@ -164,127 +299,108 @@ class AdvancedProfile extends Component {
     }
   }
 
+  onTabChange = (key, type) => {
+    this.setState({ [type]: key });
+  };
+
   render() {
-    const { stepDirection, operationkey } = this.state;
-    const { profile, loading } = this.props;
-    const { advancedOperation1, advancedOperation2, advancedOperation3 } = profile;
-    const contentList = {
-      tab1: (
-        <Table
-          pagination={false}
-          loading={loading}
-          dataSource={advancedOperation1}
-          columns={columns}
-        />
-      ),
-      tab2: (
-        <Table
-          pagination={false}
-          loading={loading}
-          dataSource={advancedOperation2}
-          columns={columns}
-        />
-      ),
-      tab3: (
-        <Table
-          pagination={false}
-          loading={loading}
-          dataSource={advancedOperation3}
-          columns={columns}
-        />
-      ),
-    };
+    const { tableListKey } = this.state;
 
     return (
-      <PageHeaderWrapper
-        title="单号：234231029431"
-        logo={
-          <img alt="" src="https://gw.alipayobjects.com/zos/rmsportal/nxkuOJlFJuAUhzlMTCEe.png" />
-        }
-        extra={action}
-        content={description}
-        extraContent={extra}
-      >
+      <PageHeaderWrapper title="SST-45" extra={action} content={description} extraContent={extra}>
         <Card title="扫描进度" style={{ marginBottom: 24 }} bordered={false}>
-          <Steps direction={stepDirection} progressDot={customDot} current={1}>
+          <Steps current={1}>
             <Step title="创建任务" description={desc1} />
-            <Step title="端口扫描" description={desc2} />
+            <Step title="端口扫描" description={desc2} icon={<Icon type="loading" />} />
             <Step title="脆弱性测试" />
             <Step title="弱密码检测" />
             <Step title="完成" />
           </Steps>
         </Card>
-        <Card title="" style={{ marginBottom: 24 }} bordered={false}>
-          <DescriptionList style={{ marginBottom: 24 }}>
-            <Description term="用户姓名">付小小</Description>
-            <Description term="会员卡号">32943898021309809423</Description>
-            <Description term="身份证">3321944288191034921</Description>
-            <Description term="联系方式">18112345678</Description>
-            <Description term="联系地址">
-              曲丽丽 18100000000 浙江省杭州市西湖区黄姑山路工专路交叉路口
-            </Description>
-          </DescriptionList>
-          <DescriptionList style={{ marginBottom: 24 }} title="信息组">
-            <Description term="某某数据">725</Description>
-            <Description term="该数据更新时间">2017-08-08</Description>
-            <Description>&nbsp;</Description>
-            <Description
-              term={
-                <span>
-                  某某数据
-                  <Tooltip title="数据说明">
-                    <Icon
-                      style={{ color: 'rgba(0, 0, 0, 0.43)', marginLeft: 4 }}
-                      type="info-circle-o"
-                    />
-                  </Tooltip>
-                </span>
-              }
-            >
-              725
-            </Description>
-            <Description term="该数据更新时间">2017-08-08</Description>
-          </DescriptionList>
-          <h4 style={{ marginBottom: 16 }}>信息组</h4>
-          <Card type="inner" title="多层级信息组">
-            <DescriptionList size="small" style={{ marginBottom: 16 }} title="组名称">
-              <Description term="负责人">林东东</Description>
-              <Description term="角色码">1234567</Description>
-              <Description term="所属部门">XX公司 - YY部</Description>
-              <Description term="过期时间">2017-08-08</Description>
-              <Description term="描述">
-                这段描述很长很长很长很长很长很长很长很长很长很长很长很长很长很长...
-              </Description>
-            </DescriptionList>
-            <Divider style={{ margin: '16px 0' }} />
-            <DescriptionList size="small" style={{ marginBottom: 16 }} title="组名称" col="1">
-              <Description term="学名">
-                Citrullus lanatus (Thunb.) Matsum. et
-                Nakai一年生蔓生藤本；茎、枝粗壮，具明显的棱。卷须较粗..
-              </Description>
-            </DescriptionList>
-            <Divider style={{ margin: '16px 0' }} />
-            <DescriptionList size="small" title="组名称">
-              <Description term="负责人">付小小</Description>
-              <Description term="角色码">1234568</Description>
-            </DescriptionList>
-          </Card>
+        <Card style={{ marginBottom: 24 }} bordered={false}>
+          <Row gutter={16}>
+            <Col className="gutter-row" md={6} sm={24}>
+              <Gauge
+                title="健康度"
+                style={{ zIndex: 1 }}
+                height={164}
+                percent={60}
+                color="#1890ff"
+              />
+            </Col>
+            <Col className="gutter-row" md={18} sm={24} xs={0}>
+              <div className={styles.extraContent}>
+                <div className={`${styles.statItem} ${styles.danger}`}>
+                  <p>高危漏洞</p>
+                  <p>6</p>
+                </div>
+                <div className={`${styles.statItem} ${styles.primary}`}>
+                  <p>中危漏洞</p>
+                  <p>8</p>
+                </div>
+                <div className={`${styles.statItem} ${styles.green}`}>
+                  <p>低危漏洞</p>
+                  <p>32</p>
+                </div>
+              </div>
+            </Col>
+          </Row>
         </Card>
-        <Card title="用户近半年来电记录" style={{ marginBottom: 24 }} bordered={false}>
+        {/* 扫描初期无数据时前端展示Dome */}
+        {/* <Card style={{ marginBottom: 24 }} bordered={false}>
           <div className={styles.noData}>
             <Icon type="frown-o" />
             暂无数据
           </div>
-        </Card>
-        <Card className={styles.tabsCard} bordered={false} onTabChange={this.onOperationTabChange}>
-          {contentList[operationkey]}
-        </Card>
-        <div className={styles.twoColLayout}>
+        </Card> */}
+        <div className={styles.twoColLayout} style={{ marginBottom: 24 }}>
           <Row gutter={24} type="flex">
-            <Col xl={12} lg={24} md={24} sm={24} xs={24} />
-            <Col xl={12} lg={24} md={24} sm={24} xs={24} />
+            <Col xl={12} lg={24} md={24} sm={24} xs={24}>
+              <Card title="服务类别占比" bordered={false}>
+                <Pie
+                  hasLegend
+                  title="服务类别占比"
+                  subTitle="总服务数"
+                  total={() =>
+                    servicePieData.reduce((a, b) => {
+                      return { y: a.y + b.y };
+                    }).y
+                  }
+                  data={servicePieData}
+                  valueFormat={value => <span>{numeral(value).format('0,0')}</span>}
+                  height={294}
+                />
+              </Card>
+            </Col>
+            <Col xl={12} lg={24} md={24} sm={24} xs={24}>
+              <Card title="漏洞类别占比" bordered={false}>
+                <Pie
+                  hasLegend
+                  title="漏洞类别占比"
+                  subTitle="总漏洞数"
+                  total={() =>
+                    vulnerabilityPieData.reduce((a, b) => {
+                      return { y: a.y + b.y };
+                    }).y
+                  }
+                  data={vulnerabilityPieData}
+                  valueFormat={value => <span>{numeral(value).format('0,0')}</span>}
+                  height={294}
+                />
+              </Card>
+            </Col>
           </Row>
         </div>
+        <Card
+          style={{ width: '100%', marginBottom: 24 }}
+          tabList={tableList}
+          activeTabKey={tableListKey}
+          onTabChange={key => {
+            this.onTabChange(key, 'tableListKey');
+          }}
+        >
+          {tableListcontent[tableListKey]}
+        </Card>
       </PageHeaderWrapper>
     );
   }

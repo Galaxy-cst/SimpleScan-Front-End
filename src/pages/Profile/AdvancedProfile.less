@@ -1,4 +1,5 @@
 @import '~antd/lib/style/themes/default.less';
+@import '~@/utils/utils.less';
 
 .headerList {
   margin-bottom: 4px;
@@ -57,4 +58,61 @@
   .salesCard {
     height: calc(100% - 24px);
   }
+}
+
+.extraContent {
+  .clearfix();
+
+  white-space: nowrap;
+  .statItem {
+    position: relative;
+    display: inline-block;
+    width: 33.3%;
+    margin: 48px 0;
+    padding: 0 32px;
+    text-align: center;
+    > p:first-child {
+      margin-bottom: 4px;
+      color: @text-color-secondary;
+      font-size: @font-size-base;
+      line-height: 22px;
+    }
+    > p {
+      margin: 0;
+      // color: @heading-color;
+      font-size: 30px;
+      line-height: 38px;
+      > span {
+        color: @text-color-secondary;
+        font-size: 20px;
+      }
+    }
+    &::after {
+      position: absolute;
+      top: 8px;
+      right: 0;
+      width: 1px;
+      height: 40px;
+      background-color: @border-color-split;
+      content: '';
+    }
+    &:last-child {
+      padding-right: 0;
+      &::after {
+        display: none;
+      }
+    }
+  }
+}
+
+.danger {
+  color: #d42e3c;
+}
+
+.primary {
+  color: #1890ff;
+}
+
+.green {
+  color: #2fc25b;
 }
