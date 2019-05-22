@@ -1,40 +1,10 @@
 import React, { PureComponent } from 'react';
 import moment from 'moment';
 import { connect } from 'dva';
-import Link from 'umi/link';
-import { Row, Col, Card, List, Avatar } from 'antd';
-import { Radar } from '@/components/Charts';
-import EditableLinkGroup from '@/components/EditableLinkGroup';
+import { Card, List, Avatar, Button, Icon, Tooltip, Progress } from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 
 import styles from './Workplace.less';
-
-const links = [
-  {
-    title: '操作一',
-    href: '',
-  },
-  {
-    title: '操作二',
-    href: '',
-  },
-  {
-    title: '操作三',
-    href: '',
-  },
-  {
-    title: '操作四',
-    href: '',
-  },
-  {
-    title: '操作五',
-    href: '',
-  },
-  {
-    title: '操作六',
-    href: '',
-  },
-];
 
 @connect(({ user, project, activities, chart, loading }) => ({
   currentUser: user.currentUser,
@@ -107,30 +77,43 @@ class Workplace extends PureComponent {
   }
 
   render() {
-    const {
-      currentUser,
-      currentUserLoading,
-      project: { notice },
-      projectLoading,
-      activitiesLoading,
-      chart: { radarData },
-    } = this.props;
+    const { currentUser, currentUserLoading, loading } = this.props;
+
+    const list = [];
+    for (let i = 0; i < 20; i += 1) {
+      list.push({
+        id: `fake-list-${i}`,
+        title: `SST-${i}`,
+        cover: 'cover',
+        status: ['active', 'exception', 'normal'][i % 3],
+        percent: Math.ceil(Math.random() * 50) + 50,
+        updatedAt: new Date(new Date().getTime() - 1000 * 60 * 60 * 2 * i),
+        createdAt: new Date(new Date().getTime() - 1000 * 60 * 60 * 2 * i),
+        subDescription: 'subDescription',
+        description: (
+          <div>
+            <p>IP: 127.0.0.1 | 发现高危漏洞数: 0</p>
+            <Progress
+              percent={parseInt(Math.random() * (100 - 80 + 1) + 80, 10)}
+              style={{ width: '99%' }}
+            />
+          </div>
+        ),
+        activeUser: Math.ceil(Math.random() * 100000) + 100000,
+        newUser: Math.ceil(Math.random() * 1000) + 1000,
+        star: Math.ceil(Math.random() * 100) + 100,
+        like: Math.ceil(Math.random() * 100) + 100,
+        message: Math.ceil(Math.random() * 10) + 10,
+        author: 'SimpleScan',
+      });
+    }
 
     const pageHeaderContent =
       currentUser && Object.keys(currentUser).length ? (
         <div className={styles.pageHeaderContent}>
-          <div className={styles.avatar}>
-            <Avatar size="large" src={currentUser.avatar} />
-          </div>
           <div className={styles.content}>
-            <div className={styles.contentTitle}>
-              早安，
-              {currentUser.name}
-              ，祝你开心每一天！
-            </div>
-            <div>
-              {currentUser.title} |{currentUser.group}
-            </div>
+            <div className={styles.contentTitle}>外网IP: 223.129.64.5</div>
+            <div>内网IP: 192.168.1.1</div>
           </div>
         </div>
       ) : null;
@@ -138,18 +121,30 @@ class Workplace extends PureComponent {
     const extraContent = (
       <div className={styles.extraContent}>
         <div className={styles.statItem}>
-          <p>项目数</p>
-          <p>56</p>
+          <p>CPU</p>
+          <p>56%</p>
         </div>
         <div className={styles.statItem}>
-          <p>团队内排名</p>
+          <p>内存</p>
+          <p>70%</p>
+        </div>
+        <div className={styles.statItem}>
           <p>
-            8<span> / 24</span>
+            pps&nbsp;
+            <Tooltip placement="topRight" title="服务器发包速率">
+              <Icon type="info-circle-o" />
+            </Tooltip>
           </p>
-        </div>
-        <div className={styles.statItem}>
-          <p>项目访问</p>
-          <p>2,223</p>
+          <p>
+            <span>
+              <Icon type="up" />
+            </span>
+            20<span>&nbsp;Kbps</span> /{' '}
+            <span>
+              <Icon type="down" />
+            </span>
+            1<span>&nbsp;Kbps</span>
+          </p>
         </div>
       </div>
     );
@@ -160,93 +155,32 @@ class Workplace extends PureComponent {
         content={pageHeaderContent}
         extraContent={extraContent}
       >
-        <Row gutter={24}>
-          <Col xl={16} lg={24} md={24} sm={24} xs={24}>
-            <Card
-              className={styles.projectList}
-              style={{ marginBottom: 24 }}
-              title="进行中的项目"
-              bordered={false}
-              extra={<Link to="/">全部项目</Link>}
-              loading={projectLoading}
-              bodyStyle={{ padding: 0 }}
-            >
-              {notice.map(item => (
-                <Card.Grid className={styles.projectGrid} key={item.id}>
-                  <Card bodyStyle={{ padding: 0 }} bordered={false}>
+        <div className={styles.cardList}>
+          <List
+            rowKey="id"
+            loading={loading}
+            grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
+            dataSource={['', ...list]}
+            renderItem={item =>
+              item ? (
+                <List.Item key={item.id}>
+                  <Card hoverable className={styles.card} actions={[<a>查看详情</a>, <a>导出</a>]}>
                     <Card.Meta
-                      title={
-                        <div className={styles.cardTitle}>
-                          <Avatar size="small" src={item.logo} />
-                          <Link to={item.href}>{item.title}</Link>
-                        </div>
-                      }
-                      description={item.description}
+                      title={<a>{item.title}</a>}
+                      description={<div className={styles.item}>{item.description}</div>}
                     />
-                    <div className={styles.projectItemContent}>
-                      <Link to={item.memberLink}>{item.member || ''}</Link>
-                      {item.updatedAt && (
-                        <span className={styles.datetime} title={item.updatedAt}>
-                          {moment(item.updatedAt).fromNow()}
-                        </span>
-                      )}
-                    </div>
                   </Card>
-                </Card.Grid>
-              ))}
-            </Card>
-            <Card
-              bodyStyle={{ padding: 0 }}
-              bordered={false}
-              className={styles.activeCard}
-              title="动态"
-              loading={activitiesLoading}
-            >
-              <List loading={activitiesLoading} size="large">
-                <div className={styles.activitiesList}>{this.renderActivities()}</div>
-              </List>
-            </Card>
-          </Col>
-          <Col xl={8} lg={24} md={24} sm={24} xs={24}>
-            <Card
-              style={{ marginBottom: 24 }}
-              title="快速开始 / 便捷导航"
-              bordered={false}
-              bodyStyle={{ padding: 0 }}
-            >
-              <EditableLinkGroup onAdd={() => {}} links={links} linkElement={Link} />
-            </Card>
-            <Card
-              style={{ marginBottom: 24 }}
-              bordered={false}
-              title="XX 指数"
-              loading={radarData.length === 0}
-            >
-              <div className={styles.chart}>
-                <Radar hasLegend height={343} data={radarData} />
-              </div>
-            </Card>
-            <Card
-              bodyStyle={{ paddingTop: 12, paddingBottom: 12 }}
-              bordered={false}
-              title="团队"
-              loading={projectLoading}
-            >
-              <div className={styles.members}>
-                <Row gutter={48}>
-                  {notice.map(item => (
-                    <Col span={12} key={`members-item-${item.id}`}>
-                      <Link to={item.href}>
-                        <Avatar src={item.logo} size="small" />
-                        <span className={styles.member}>{item.member}</span>
-                      </Link>
-                    </Col>
-                  ))}
-                </Row>
-              </div>
-            </Card>
-          </Col>
-        </Row>
+                </List.Item>
+              ) : (
+                <List.Item>
+                  <Button type="dashed" className={styles.newButton}>
+                    <Icon type="plus" /> 新建任务
+                  </Button>
+                </List.Item>
+              )
+            }
+          />
+        </div>
       </PageHeaderWrapper>
     );
   }
