@@ -12,12 +12,6 @@ class SearchList extends Component {
       case 'articles':
         router.push(`${match.url}/articles`);
         break;
-      case 'applications':
-        router.push(`${match.url}/applications`);
-        break;
-      case 'projects':
-        router.push(`${match.url}/projects`);
-        break;
       default:
         break;
     }
@@ -29,21 +23,6 @@ class SearchList extends Component {
   };
 
   render() {
-    const tabList = [
-      {
-        key: 'articles',
-        tab: '文章',
-      },
-      {
-        key: 'projects',
-        tab: '项目',
-      },
-      {
-        key: 'applications',
-        tab: '应用',
-      },
-    ];
-
     const mainSearch = (
       <div style={{ textAlign: 'center' }}>
         <Input.Search
@@ -56,16 +35,10 @@ class SearchList extends Component {
       </div>
     );
 
-    const { match, children, location } = this.props;
+    const { children } = this.props;
 
     return (
-      <PageHeaderWrapper
-        title="搜索列表"
-        content={mainSearch}
-        tabList={tabList}
-        tabActiveKey={location.pathname.replace(`${match.path}/`, '')}
-        onTabChange={this.handleTabChange}
-      >
+      <PageHeaderWrapper title="Payloads列表" content={mainSearch}>
         {children}
         {/* <Switch>
           {routes.map(item => (
