@@ -1,35 +1,44 @@
 import { routerRedux } from 'dva/router';
-import { message } from 'antd';
-import { fakeSubmitForm } from '@/services/api';
+import { notification } from 'antd';
+import { submitTask, taskPreCheck } from '@/services/api';
 
 export default {
   namespace: 'form',
 
   state: {
     step: {
-      payAccount: 'ant-design@alipay.com',
-      receiverAccount: 'test@example.com',
-      receiverName: 'Alex',
-      amount: '500',
+      ip: '',
+      ports: '',
+      type: '',
     },
   },
 
   effects: {
-    *submitRegularForm({ payload }, { call }) {
-      yield call(fakeSubmitForm, payload);
-      message.success('提交成功');
-    },
     *submitStepForm({ payload }, { call, put }) {
-      yield call(fakeSubmitForm, payload);
-      yield put({
-        type: 'saveStepFormData',
-        payload,
-      });
-      yield put(routerRedux.push('/form/step-form/result'));
+      const response = yield call(submitTask, payload);
+      if (response.status === 'ok') {
+        yield put(routerRedux.push('/form/step-form/result'));
+      } else {
+        notification.error({
+          message: '错误！',
+          description: response.description,
+        });
+      }
     },
-    *submitAdvancedForm({ payload }, { call }) {
-      yield call(fakeSubmitForm, payload);
-      message.success('提交成功');
+    *checkStepForm({ payload }, { call, put }) {
+      const response = yield call(taskPreCheck, payload);
+      if (response.status === 'ok') {
+        yield put({
+          type: 'saveStepFormData',
+          payload,
+        });
+        yield put(routerRedux.push('/form/step-form/confirm'));
+      } else {
+        notification.error({
+          message: '输入错误！',
+          description: response.description,
+        });
+      }
     },
   },
 

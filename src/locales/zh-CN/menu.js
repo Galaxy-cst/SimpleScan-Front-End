@@ -19,6 +19,7 @@ export default {
   'menu.list.basiclist': '标准列表',
   'menu.list.cardlist': '卡片列表',
   'menu.list.searchlist': '搜索列表',
+  'menu.list.searchpayloads': 'Payloads',
   'menu.list.searchlist.articles': '搜索列表（文章）',
   'menu.list.searchlist.projects': '搜索列表（项目）',
   'menu.list.searchlist.applications': '搜索列表（应用）',

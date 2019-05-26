@@ -14,9 +14,9 @@ const FormItem = Form.Item;
 
 const pageSize = 5;
 
-@connect(({ list, loading }) => ({
-  list,
-  loading: loading.models.list,
+@connect(({ rule, loading }) => ({
+  payloads: rule.payloads,
+  loading: loading.effects['profile/fetchTaskDetail'],
 }))
 @Form.create({
   onValuesChange({ dispatch }, changedValues, allValues) {
@@ -36,10 +36,7 @@ class SearchList extends Component {
   componentDidMount() {
     const { dispatch } = this.props;
     dispatch({
-      type: 'list/fetch',
-      payload: {
-        count: 5,
-      },
+      type: 'rule/fetchPayloads',
     });
   }
 
@@ -61,7 +58,7 @@ class SearchList extends Component {
   };
 
   render() {
-    const { form, loading } = this.props;
+    const { form, loading, payloads } = this.props;
     const { getFieldDecorator } = form;
 
     const mainSearch = (
@@ -75,30 +72,6 @@ class SearchList extends Component {
         />
       </div>
     );
-
-    const list = [];
-    for (let i = 0; i < 20; i += 1) {
-      list.push({
-        id: `fake-list-${i}`,
-        title: 'PHP常见信息泄露文件',
-        cover: 'cover',
-        status: ['active', 'exception', 'normal'][i % 3],
-        percent: Math.ceil(Math.random() * 50) + 50,
-        updatedAt: new Date(new Date().getTime() - 1000 * 60 * 60 * 2 * i),
-        createdAt: new Date(new Date().getTime() - 1000 * 60 * 60 * 2 * i),
-        subDescription: 'subDescription',
-        description:
-          '在中台产品的研发过程中，会出现不同的设计规范和实现方式，但其中往往存在很多类似的页面和组件，这些类似的组件会被抽离成一套标准规范。',
-        activeUser: Math.ceil(Math.random() * 100000) + 100000,
-        newUser: Math.ceil(Math.random() * 1000) + 1000,
-        star: Math.ceil(Math.random() * 100) + 100,
-        like: Math.ceil(Math.random() * 100) + 100,
-        message: Math.ceil(Math.random() * 10) + 10,
-        content:
-          '段落示意：蚂蚁金服设计平台 ant.design，用最小的工作量，无缝接入蚂蚁金服生态，提供跨越设计与开发的体验解决方案。蚂蚁金服设计平台 ant.design，用最小的工作量，无缝接入蚂蚁金服生态，提供跨越设计与开发的体验解决方案。',
-        author: 'SimpleScan',
-      });
-    }
 
     const IconText = ({ type, text }) => (
       <span>
@@ -124,7 +97,7 @@ class SearchList extends Component {
     };
 
     const loadMore =
-      list.length > 0 ? (
+      payloads.length > 0 ? (
         <div style={{ textAlign: 'center', marginTop: 16 }}>
           <Button onClick={this.fetchMore} style={{ paddingLeft: 48, paddingRight: 48 }}>
             {loading ? (
@@ -139,7 +112,8 @@ class SearchList extends Component {
       ) : null;
 
     const options = (() => {
-      const itemlist = [1, 2, 3, 4, 5];
+      const allTypes = payloads.map(e => e.type);
+      const itemlist = [...new Set(allTypes)];
       const optionslist = itemlist.map(index => (
         <TagSelect.Option value={`cat${index}`}>{index}</TagSelect.Option>
       ));
@@ -184,14 +158,14 @@ class SearchList extends Component {
           >
             <List
               size="large"
-              loading={list.length === 0 ? loading : false}
+              loading={payloads.length === 0 ? loading : false}
               rowKey="id"
               itemLayout="vertical"
               loadMore={loadMore}
-              dataSource={list}
+              dataSource={payloads}
               renderItem={item => (
                 <List.Item
-                  key={item.id}
+                  key={item.name}
                   actions={[
                     <IconText type="file-text" text="查看" />,
                     <IconText type="form" text="编辑" />,
@@ -200,15 +174,11 @@ class SearchList extends Component {
                   extra={<div className={styles.listItemExtra} />}
                 >
                   <List.Item.Meta
-                    title={
-                      <a className={styles.listItemMetaTitle} href={item.href}>
-                        {item.title}
-                      </a>
-                    }
+                    title={<a className={styles.listItemMetaTitle}>{item.name}</a>}
                     description={
                       <span>
-                        <Tag>常见漏洞</Tag>
-                        <Tag>GET</Tag>
+                        <Tag>{item.type}</Tag>
+                        <Tag>{item.method}</Tag>
                       </span>
                     }
                   />

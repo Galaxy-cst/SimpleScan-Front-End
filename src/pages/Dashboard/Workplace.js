@@ -1,19 +1,19 @@
 import React, { PureComponent } from 'react';
 import moment from 'moment';
 import { connect } from 'dva';
-import { Card, List, Avatar, Button, Icon, Tooltip, Progress } from 'antd';
+import router from 'umi/router';
+import { Card, List, Avatar, Button, Icon, Tooltip, Empty } from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 
 import styles from './Workplace.less';
 
-@connect(({ user, project, activities, chart, loading }) => ({
+@connect(({ user, tasks, loading, system }) => ({
   currentUser: user.currentUser,
-  project,
-  activities,
-  chart,
+  systemInfo: system.system_info,
+  tasks: tasks.data,
   currentUserLoading: loading.effects['user/fetchCurrent'],
-  projectLoading: loading.effects['project/fetchNotice'],
-  activitiesLoading: loading.effects['activities/fetchList'],
+  systemInfoLoading: loading.effects['system/fetch'],
+  tasksLoading: loading.effects['tasks/fetch'],
 }))
 class Workplace extends PureComponent {
   componentDidMount() {
@@ -22,14 +22,16 @@ class Workplace extends PureComponent {
       type: 'user/fetchCurrent',
     });
     dispatch({
-      type: 'project/fetchNotice',
+      type: 'system/fetch',
     });
     dispatch({
-      type: 'activities/fetchList',
+      type: 'tasks/fetch',
     });
-    dispatch({
-      type: 'chart/fetch',
-    });
+    this.intervalId = setInterval(() => {
+      dispatch({
+        type: 'system/fetch',
+      });
+    }, 5000);
   }
 
   componentWillUnmount() {
@@ -37,7 +39,12 @@ class Workplace extends PureComponent {
     dispatch({
       type: 'chart/clear',
     });
+    clearInterval(this.intervalId);
   }
+
+  previewItem = id => {
+    router.push(`/profile/advanced/${id}`);
+  };
 
   renderActivities() {
     const {
@@ -77,43 +84,15 @@ class Workplace extends PureComponent {
   }
 
   render() {
-    const { currentUser, currentUserLoading, loading } = this.props;
-
-    const list = [];
-    for (let i = 0; i < 20; i += 1) {
-      list.push({
-        id: `fake-list-${i}`,
-        title: `SST-${i}`,
-        cover: 'cover',
-        status: ['active', 'exception', 'normal'][i % 3],
-        percent: Math.ceil(Math.random() * 50) + 50,
-        updatedAt: new Date(new Date().getTime() - 1000 * 60 * 60 * 2 * i),
-        createdAt: new Date(new Date().getTime() - 1000 * 60 * 60 * 2 * i),
-        subDescription: 'subDescription',
-        description: (
-          <div>
-            <p>IP: 127.0.0.1 | 发现高危漏洞数: 0</p>
-            <Progress
-              percent={parseInt(Math.random() * (100 - 80 + 1) + 80, 10)}
-              style={{ width: '99%' }}
-            />
-          </div>
-        ),
-        activeUser: Math.ceil(Math.random() * 100000) + 100000,
-        newUser: Math.ceil(Math.random() * 1000) + 1000,
-        star: Math.ceil(Math.random() * 100) + 100,
-        like: Math.ceil(Math.random() * 100) + 100,
-        message: Math.ceil(Math.random() * 10) + 10,
-        author: 'SimpleScan',
-      });
-    }
+    const { currentUser, systemInfo, systemInfoLoading, tasks, tasksLoading } = this.props;
+    const { list } = tasks;
 
     const pageHeaderContent =
       currentUser && Object.keys(currentUser).length ? (
         <div className={styles.pageHeaderContent}>
           <div className={styles.content}>
-            <div className={styles.contentTitle}>外网IP: 223.129.64.5</div>
-            <div>内网IP: 192.168.1.1</div>
+            <div className={styles.contentTitle}>外网IP: {systemInfo.ip.extranet_ip}</div>
+            <div>内网IP: {systemInfo.ip.intranet_ip}</div>
           </div>
         </div>
       ) : null;
@@ -122,11 +101,11 @@ class Workplace extends PureComponent {
       <div className={styles.extraContent}>
         <div className={styles.statItem}>
           <p>CPU</p>
-          <p>56%</p>
+          <p>{systemInfo.cpu}%</p>
         </div>
         <div className={styles.statItem}>
           <p>内存</p>
-          <p>70%</p>
+          <p>{systemInfo.mem}%</p>
         </div>
         <div className={styles.statItem}>
           <p>
@@ -139,47 +118,79 @@ class Workplace extends PureComponent {
             <span>
               <Icon type="up" />
             </span>
-            20<span>&nbsp;Kbps</span> /{' '}
+            {Math.round(systemInfo.pps.tx_pps)}
+            <span>&nbsp;pps</span>/
             <span>
               <Icon type="down" />
             </span>
-            1<span>&nbsp;Kbps</span>
+            {Math.round(systemInfo.pps.rx_pps)}
+            <span>&nbsp;pps</span>
           </p>
         </div>
       </div>
     );
 
-    return (
-      <PageHeaderWrapper
-        loading={currentUserLoading}
-        content={pageHeaderContent}
-        extraContent={extraContent}
-      >
-        <div className={styles.cardList}>
+    const ListWapper = () => {
+      if (list) {
+        return (
           <List
             rowKey="id"
-            loading={loading}
+            loading={tasksLoading}
             grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
             dataSource={['', ...list]}
             renderItem={item =>
               item ? (
-                <List.Item key={item.id}>
-                  <Card hoverable className={styles.card} actions={[<a>查看详情</a>, <a>导出</a>]}>
+                <List.Item key={item.taskid}>
+                  <Card
+                    hoverable
+                    className={styles.card}
+                    actions={[
+                      <a onClick={() => this.previewItem(item.taskid)}>查看详情</a>,
+                      <a>导出</a>,
+                    ]}
+                  >
                     <Card.Meta
-                      title={<a>{item.title}</a>}
-                      description={<div className={styles.item}>{item.description}</div>}
+                      title={
+                        <a onClick={() => this.previewItem(item.taskid)}>{`SST-${item.taskid}`}</a>
+                      }
+                      description={
+                        <div className={styles.item}>
+                          {`IP: ${item.ip}`}
+                          <br />
+                          {`最新扫描时间: ${item.updated_time}`}
+                          <br />
+                          {`发现漏洞数: ${item.vulncount || 0}`}
+                        </div>
+                      }
                     />
                   </Card>
                 </List.Item>
               ) : (
                 <List.Item>
-                  <Button type="dashed" className={styles.newButton}>
+                  <Button
+                    type="dashed"
+                    className={styles.newButton}
+                    onClick={() => router.push('/form/step-form/info')}
+                  >
                     <Icon type="plus" /> 新建任务
                   </Button>
                 </List.Item>
               )
             }
           />
+        );
+      }
+      return <Empty />;
+    };
+
+    return (
+      <PageHeaderWrapper
+        loading={systemInfoLoading}
+        content={pageHeaderContent}
+        extraContent={extraContent}
+      >
+        <div className={styles.cardList}>
+          <ListWapper />
         </div>
       </PageHeaderWrapper>
     );

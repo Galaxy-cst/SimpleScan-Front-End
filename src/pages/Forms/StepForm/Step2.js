@@ -27,13 +27,12 @@ class Step2 extends React.PureComponent {
     };
     const onValidateForm = e => {
       e.preventDefault();
-      validateFields((err, values) => {
+      validateFields(err => {
         if (!err) {
           dispatch({
             type: 'form/submitStepForm',
             payload: {
               ...data,
-              ...values,
             },
           });
         }
@@ -48,10 +47,10 @@ class Step2 extends React.PureComponent {
           style={{ marginBottom: 24 }}
         />
         <Form.Item {...formItemLayout} className={styles.stepFormText} label="扫描目标">
-          {data.receiverAccount}
+          {data.ip}
         </Form.Item>
         <Form.Item {...formItemLayout} className={styles.stepFormText} label="扫描端口">
-          {data.receiverName}
+          {data.ports}
         </Form.Item>
         <Form.Item
           style={{ marginBottom: 8 }}

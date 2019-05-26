@@ -105,41 +105,46 @@ export default [
             component: './List/TableList',
           },
           {
-            path: '/list/basic-list',
-            name: 'basiclist',
-            component: './List/BasicList',
+            path: '/list/search/payloads-list',
+            name: 'searchpayloads',
+            component: './List/Articles',
           },
-          {
-            path: '/list/card-list',
-            name: 'cardlist',
-            component: './List/CardList',
-          },
-          {
-            path: '/list/search',
-            name: 'searchlist',
-            component: './List/List',
-            routes: [
-              {
-                path: '/list/search',
-                redirect: '/list/search/articles',
-              },
-              {
-                path: '/list/search/articles',
-                name: 'articles',
-                component: './List/Articles',
-              },
-              {
-                path: '/list/search/projects',
-                name: 'projects',
-                component: './List/Projects',
-              },
-              {
-                path: '/list/search/applications',
-                name: 'applications',
-                component: './List/Applications',
-              },
-            ],
-          },
+          // {
+          //   path: '/list/basic-list',
+          //   name: 'basiclist',
+          //   component: './List/BasicList',
+          // },
+          // {
+          //   path: '/list/card-list',
+          //   name: 'cardlist',
+          //   component: './List/CardList',
+          // },
+          // {
+          //   path: '/list/search',
+          //   name: 'searchlist',
+          //   component: './List/List',
+          //   routes: [
+          //     {
+          //       path: '/list/search',
+          //       redirect: '/list/search/articles',
+          //     },
+          //     {
+          //       path: '/list/search/articles',
+          //       name: 'articles',
+          //       component: './List/Articles',
+          //     },
+          //     {
+          //       path: '/list/search/projects',
+          //       name: 'projects',
+          //       component: './List/Projects',
+          //     },
+          //     {
+          //       path: '/list/search/applications',
+          //       name: 'applications',
+          //       component: './List/Applications',
+          //     },
+          //   ],
+          // },
         ],
       },
       {
@@ -154,12 +159,12 @@ export default [
           //   name: 'basic',
           //   component: './Profile/BasicProfile',
           // },
-          {
-            path: '/profile/basic/:id',
-            name: 'basic',
-            hideInMenu: true,
-            component: './Profile/BasicProfile',
-          },
+          // {
+          //   path: '/profile/basic/:id',
+          //   name: 'basic',
+          //   hideInMenu: true,
+          //   component: './Profile/BasicProfile',
+          // },
           {
             path: '/profile/advanced/:id',
             name: 'advanced',
@@ -183,35 +188,36 @@ export default [
       //     { path: '/result/fail', name: 'fail', component: './Result/Error' },
       //   ],
       // },
-      // {
-      //   name: 'exception',
-      //   icon: 'warning',
-      //   path: '/exception',
-      //   routes: [
-      //     // exception
-      //     {
-      //       path: '/exception/403',
-      //       name: 'not-permission',
-      //       component: './Exception/403',
-      //     },
-      //     {
-      //       path: '/exception/404',
-      //       name: 'not-find',
-      //       component: './Exception/404',
-      //     },
-      //     {
-      //       path: '/exception/500',
-      //       name: 'server-error',
-      //       component: './Exception/500',
-      //     },
-      //     {
-      //       path: '/exception/trigger',
-      //       name: 'trigger',
-      //       hideInMenu: true,
-      //       component: './Exception/TriggerException',
-      //     },
-      //   ],
-      // },
+      {
+        name: 'exception',
+        icon: 'warning',
+        path: '/exception',
+        hideInMenu: true,
+        routes: [
+          // exception
+          {
+            path: '/exception/403',
+            name: 'not-permission',
+            component: './Exception/403',
+          },
+          {
+            path: '/exception/404',
+            name: 'not-find',
+            component: './Exception/404',
+          },
+          {
+            path: '/exception/500',
+            name: 'server-error',
+            component: './Exception/500',
+          },
+          {
+            path: '/exception/trigger',
+            name: 'trigger',
+            hideInMenu: true,
+            component: './Exception/TriggerException',
+          },
+        ],
+      },
       {
         name: 'account',
         icon: 'user',

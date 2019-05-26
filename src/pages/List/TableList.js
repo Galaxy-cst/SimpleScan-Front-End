@@ -265,24 +265,29 @@ class TableList extends PureComponent {
   columns = [
     {
       title: '任务ID',
-      dataIndex: 'name',
-      render: text => <a onClick={() => this.previewItem(text)}>{text}</a>,
+      dataIndex: 'taskid',
+      render: text => <a onClick={() => this.previewItem(text)}>{`SST-${text}`}</a>,
     },
     {
       title: 'IP',
-      dataIndex: 'desc',
+      dataIndex: 'ip',
     },
     {
       title: '发现漏洞',
-      dataIndex: 'callNo',
+      dataIndex: 'vulncount',
       sorter: true,
-      render: val => `${val} 个`,
+      render: val => {
+        if (val) {
+          return `${val} 个`;
+        }
+        return '0 个';
+      },
       // mark to display a total number
       needTotal: true,
     },
     {
       title: '状态',
-      dataIndex: 'status',
+      dataIndex: 'current_task',
       filters: [
         {
           text: status[0],
@@ -302,17 +307,36 @@ class TableList extends PureComponent {
         },
       ],
       render(val) {
-        return <Badge status={statusMap[val]} text={status[val]} />;
+        let value;
+        switch (val) {
+          case 'SCAN_STATUS_PORTSCAN':
+            value = 1;
+            break;
+          case 'SCAN_STATUS_FINISHED':
+            value = 2;
+            break;
+          case 'SCAN_STATUS_ERROR':
+            value = 3;
+            break;
+          case 'SCAN_STATUS_WAITING':
+            value = 0;
+            break;
+          default:
+            value = 0;
+            break;
+        }
+        return <Badge status={statusMap[value]} text={status[value]} />;
       },
     },
     {
       title: '最新扫描时间',
-      dataIndex: 'updatedAt',
+      dataIndex: 'updated_time',
       sorter: true,
       render: val => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>,
     },
     {
       title: '操作',
+      dataIndex: 'taskid',
       render: text => (
         <Fragment>
           <a onClick={() => this.previewItem(text)}>查看详情</a>

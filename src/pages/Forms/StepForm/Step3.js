@@ -14,6 +14,9 @@ class Step3 extends React.PureComponent {
     const onFinish = () => {
       router.push('/form/step-form/info');
     };
+    const toConsole = () => {
+      router.push('/list/table-list');
+    };
     const information = (
       <div className={styles.information}>
         <Row>
@@ -21,7 +24,7 @@ class Step3 extends React.PureComponent {
             扫描目标：
           </Col>
           <Col xs={24} sm={16}>
-            {data.receiverAccount}
+            {data.ip}
           </Col>
         </Row>
         <Row>
@@ -29,7 +32,7 @@ class Step3 extends React.PureComponent {
             扫描端口：
           </Col>
           <Col xs={24} sm={16}>
-            {data.receiverName}
+            {data.ports}
           </Col>
         </Row>
       </div>
@@ -39,7 +42,7 @@ class Step3 extends React.PureComponent {
         <Button type="primary" onClick={onFinish}>
           继续添加任务
         </Button>
-        <Button>进入控制台查看</Button>
+        <Button onClick={toConsole}>进入控制台查看</Button>
       </Fragment>
     );
     return (

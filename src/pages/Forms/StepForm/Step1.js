@@ -1,7 +1,6 @@
 import React, { Fragment } from 'react';
 import { connect } from 'dva';
 import { Form, Input, Button, Select, Divider } from 'antd';
-import router from 'umi/router';
 import styles from './style.less';
 
 const { Option } = Select;
@@ -27,10 +26,9 @@ class Step1 extends React.PureComponent {
       validateFields((err, values) => {
         if (!err) {
           dispatch({
-            type: 'form/saveStepFormData',
+            type: 'form/checkStepForm',
             payload: values,
           });
-          router.push('/form/step-form/confirm');
         }
       });
     };
@@ -39,17 +37,21 @@ class Step1 extends React.PureComponent {
         <Form layout="horizontal" className={styles.stepForm} hideRequiredMark>
           <Form.Item {...formItemLayout} label="扫描目标">
             <Input.Group compact>
-              <Select defaultValue="ip" style={{ width: 80 }}>
-                <Option value="ip">IP</Option>
-                <Option value="domain">域名</Option>
-              </Select>
-              {getFieldDecorator('receiverAccount', {
+              {getFieldDecorator('type', {
+                initialValue: 'ip',
+              })(
+                <Select defaultValue="ip" style={{ width: 80 }}>
+                  <Option value="ip">IP</Option>
+                  <Option value="domain">域名</Option>
+                </Select>
+              )}
+              {getFieldDecorator('ip', {
                 rules: [{ required: true, message: '请输入扫描目标' }],
               })(<Input style={{ width: 'calc(100% - 100px)' }} placeholder="127.0.0.1" />)}
             </Input.Group>
           </Form.Item>
           <Form.Item {...formItemLayout} label="扫描端口范围">
-            {getFieldDecorator('receiverName', {
+            {getFieldDecorator('ports', {
               initialValue: 'all',
               rules: [{ required: true, message: '请输入扫描端口范围' }],
             })(<Input placeholder="22,80-3000,8000-8200" />)}

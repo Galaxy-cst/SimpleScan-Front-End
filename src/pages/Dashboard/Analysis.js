@@ -123,7 +123,7 @@ class Analysis extends Component {
         y: 100,
       },
       {
-        x: '弱密码',
+        x: '弱口令',
         y: 50,
       },
       {

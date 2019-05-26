@@ -134,12 +134,12 @@ class BaseView extends Component {
       <div className={styles.baseView} ref={this.getViewDom}>
         <div className={styles.left}>
           <Form layout="vertical" onSubmit={this.handleSubmit} hideRequiredMark>
-            <FormItem label="原密码">
+            <FormItem label="原口令">
               {getFieldDecorator('original-password', {
                 rules: [
                   {
                     required: true,
-                    message: '请输入原密码',
+                    message: '请输入原口令',
                   },
                 ],
               })(
@@ -149,7 +149,7 @@ class BaseView extends Component {
                 />
               )}
             </FormItem>
-            <FormItem label="新密码">
+            <FormItem label="新口令">
               <Popover
                 getPopupContainer={node => node.parentNode}
                 content={

@@ -1,4 +1,4 @@
-import { queryRule, removeRule, addRule, updateRule } from '@/services/api';
+import { removeRule, addRule, updateRule, getTaskList, getPayloadsList } from '@/services/api';
 
 export default {
   namespace: 'rule',
@@ -8,11 +8,12 @@ export default {
       list: [],
       pagination: {},
     },
+    payloads: [],
   },
 
   effects: {
     *fetch({ payload }, { call, put }) {
-      const response = yield call(queryRule, payload);
+      const response = yield call(getTaskList, payload);
       yield put({
         type: 'save',
         payload: response,
@@ -42,6 +43,13 @@ export default {
       });
       if (callback) callback();
     },
+    *fetchPayloads(_, { call, put }) {
+      const response = yield call(getPayloadsList);
+      yield put({
+        type: 'savePayloads',
+        payload: response,
+      });
+    },
   },
 
   reducers: {
@@ -49,6 +57,12 @@ export default {
       return {
         ...state,
         data: action.payload,
+      };
+    },
+    savePayloads(state, action) {
+      return {
+        ...state,
+        payloads: action.payload,
       };
     },
   },
